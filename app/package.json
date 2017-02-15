@@ -1,0 +1,33 @@
+{
+  "name": "Kap",
+  "main": "dist/main/index.js",
+  "private": true,
+  "version": "1.0.0",
+  "description": "The best way to record your screen",
+  "repository": "wulkano/kap",
+  "author": "Wulkano AS <team@wulka.no> (https://wulka.no/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wulkano/kap/issues"
+  },
+  "homepage": "https://getkap.co",
+  "dependencies": {
+    "aperture": "latest",
+    "aspectratio": "^2.2.2",
+    "eightpoint": "0.0.1",
+    "electron-is-dev": "^0.1.2",
+    "electron-settings": "^2.2.1",
+    "execa": "^0.5.0",
+    "file-size": "^1.0.0",
+    "first-run": "^1.2.0",
+    "insight": "^0.8.3",
+    "menubar": "git://github.com/matheuss/menubar.git",
+    "mkdirp": "^0.5.1",
+    "moment": "^2.14.1",
+    "ms": "^0.7.1",
+    "object-path": "^0.11.3",
+    "raven": "^0.12.1",
+    "tmp": "0.0.29"
+  },
+  "xo": false
+}
