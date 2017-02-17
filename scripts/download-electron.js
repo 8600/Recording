@@ -9,7 +9,7 @@ const ora = require('ora');
 
 let spinner = ora({text: 'Downloading Electron', stream: process.stdout}).start();
 
-const ELECTRON_URL = 'https://dl.dropboxusercontent.com/u/71884/Electron%201.4.12%20with%20window%20level%20fix.zip';
+const ELECTRON_URL = 'http://myweb-10017157.cos.myqcloud.com/2017/0217/Electron%201.4.12%20with%20window%20level%20fix.zip';
 const VENDOR_PATH = ['..', 'app', 'vendor'];
 
 const joinPath = (...str) => path.join(__dirname, ...str);
