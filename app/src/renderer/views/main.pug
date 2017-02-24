@@ -35,12 +35,12 @@ block body
   section.controls
     .controls-toggle.container
       +icon('dropdown-arrow').triangle
-      span.controls-toggle__title.txt Controls
+      span.controls-toggle__title.txt 配置
       +icon('gear').controls-options
 
     .controls-content.hidden
       .controls-section.container
-        span.controls-section__title.txt Aspect ratio
+        span.controls-section__title.txt 视频比例
         .controls-section__row
           .select-element
             select.aspect-ratio-selector
@@ -53,7 +53,7 @@ block body
               option(data-aspect-ratio='custom') Custom
         .controls-section__row.aspect-ratio
           .aspect-ratio__input
-            label.c-label.txt(for='aspect-ratio-width') Width
+            label.c-label.txt(for='aspect-ratio-width') 宽度
             input#aspect-ratio-width(type='text' value='512')
           .button-group.aspect-ratio__options
             button.button--primary
@@ -61,7 +61,7 @@ block body
             button.button--primary
               +icon('link').link-btn
           .aspect-ratio__input
-            label.c-label.txt(for='aspect-ratio-height') Height
+            label.c-label.txt(for='aspect-ratio-height') 高度
             input#aspect-ratio-height(type='text' value='512')
       .controls-section.container
         //- TODO remove this `style`👇
