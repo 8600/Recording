@@ -2,7 +2,7 @@
   "name": "Kap",
   "main": "dist/main/index.js",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The best way to record your screen",
   "repository": "wulkano/kap",
   "author": "Wulkano AS <team@wulka.no> (https://wulka.no/)",
@@ -12,7 +12,7 @@
   },
   "homepage": "https://getkap.co",
   "dependencies": {
-    "aperture": "latest",
+    "aperture": "2.1.0",
     "aspectratio": "^2.2.2",
     "eightpoint": "0.0.1",
     "electron-is-dev": "^0.1.2",
