@@ -5,7 +5,9 @@ import {get as getSetting} from '../common/settings-manager';
 
 const pkg = require('../../package');
 
-const trackingCode = 'UA-84705099-2';
+// Please don't use Wulkano Kap's Google Analytics tracking code.
+// see: https://github.com/wulkano/kap/blob/master/app/src/main/analytics.js#L8
+// const trackingCode = 'UA-84705099-2';
 
 const insight = new Insight({trackingCode, pkg});
 
