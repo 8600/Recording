@@ -10,7 +10,6 @@ import logger from '../common/logger';
 import * as settings from '../common/settings-manager';
 
 import autoUpdater from './auto-updater';
-import analytics from './analytics';
 import {applicationMenu, cogMenu} from './menus';
 
 const menubar = require('menubar')({
@@ -345,7 +344,6 @@ menubar.on('after-create-window', () => {
 
   mainWindowIsNew = true;
   autoUpdater.init(mainWindow);
-  analytics.init();
   initErrorReporter();
   logger.init(mainWindow);
   Menu.setApplicationMenu(applicationMenu);
@@ -375,7 +373,6 @@ ipcMain.on('started-recording', () => {
 
 ipcMain.on('stopped-recording', () => {
   resetTrayIcon();
-  analytics.track('recording/finished');
 });
 
 ipcMain.on('will-stop-recording', () => {

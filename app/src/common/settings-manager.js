@@ -9,7 +9,6 @@ const aperture = require('aperture')();
 const DEFAULTS = {
   kapturesDir: `${homedir()}/Movies/Kaptures`,
   openOnStartup: false,
-  allowAnalytics: true,
   showCursor: true,
   highlightClicks: false,
   fps: 30,

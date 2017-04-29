@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Element definitions
   const advancedPrefs = $('.advanced-prefs');
   const advancedPrefsBtn = $('.show-advanced-prefs');
-  const allowAnalyticsCheckbox = $('#allow-analytics');
   const audioInputDeviceSelector = $('.js-audio-input-device-selector');
   const chooseSaveDirectoryBtn = $('.js-choose-save');
   const fpsLabel = $('.fps-slider .js-middle-label');
@@ -39,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
   saveToDescription.setAttribute('title', settingsValues.kapturesDir);
   saveToDescription.innerText = `.../${settingsValues.kapturesDir.split('/').pop()}`;
   openOnStartupCheckbox.checked = settingsValues.openOnStartup;
-  allowAnalyticsCheckbox.checked = settingsValues.allowAnalytics;
   showCursorCheckbox.checked = settingsValues.showCursor;
   if (settingsValues.showCursor === false) {
     highlightClicksCheckbox.disabled = true;
@@ -88,10 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
   openOnStartupCheckbox.onchange = function () {
     app.kap.settings.set('openOnStartup', this.checked);
     app.setLoginItemSettings({openAtLogin: this.checked});
-  };
-
-  allowAnalyticsCheckbox.onchange = function () {
-    app.kap.settings.set('allowAnalytics', this.checked);
   };
 
   showCursorCheckbox.onchange = function () {
