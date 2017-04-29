@@ -1,7 +1,7 @@
 extends _extend
 
 block head
-  title Preferences
+  title 程序配置
   +stylesheet('preferences')
   +script('preferences')
 
@@ -18,20 +18,20 @@ block body
       .preference.container
         .preference-part
           .preference-content
-            .preference__title Save to...
+            .preference__title 保存目录
             .preference__description.js-save-to-description
           .preference-input.c-toggle
-            button.button--secondary.js-choose-save Choose
+            button.button--secondary.js-choose-save 选择
       .preference.container
         .preference-part
           .preference-content
-            .preference__title Start automatically
-            .preference__description Launch Kap on system startup
+            .preference__title 自动启动
+            .preference__description 随系统启动而启动
           +toggle('open-on-startup')
       .preference.container
         .preference-part
           .preference-content
-            .preference__title Allow analytics
+            .preference__title 允许分析
             .preference__description Help us improve Kap by sending anonymous usage stats
           +toggle('allow-analytics')
 
@@ -40,24 +40,24 @@ block body
       .preference.container
         .preference-part
           .preference-content
-            .preference__title Show mouse cursor
-            .preference__description Display the cursor in your Kaptures
+            .preference__title 显示鼠标
+            .preference__description 在录制时显示光标
           +toggle('show-cursor')
         .preference-part
           .preference-content
-            .preference__description Highlight clicks
+            .preference__description 高亮点击
           +toggle('highlight-clicks')
       .preference.container
         .preference-part
           .preference-content
-            .preference__title Capture frame rate
-            .preference__description Capturing at a higher frame rate might impact performance
-          +range(hasLabels=true min='16' max='60' lowLabel='Low' middleLabel='30FPS' highLabel='High').preference-input.fps-slider
+            .preference__title 录制帧数
+            .preference__description 以更高的帧数录制可能会影响性能
+          +range(hasLabels=true min='16' max='60' lowLabel='低' middleLabel='30FPS' highLabel='高').preference-input.fps-slider
       .preference.container
         .preference-part
           .preference-content
-            .preference__title Record audio
-            .preference__description Select input device
+            .preference__title 录制音频
+            .preference__description 选择输入设备
           .select-element(style="width: 17.8rem")
             select.js-audio-input-device-selector
-              option(value='none') None
+              option(value='none') 无

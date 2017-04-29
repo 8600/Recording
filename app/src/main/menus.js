@@ -3,7 +3,7 @@ import {app, Menu, shell} from 'electron';
 import {checkForUpdates} from './auto-updater';
 
 const checkForUpdatesItem = {
-  label: 'Check for updates',
+  label: '检测更新',
   click(item) {
     item.enabled = false;
     checkForUpdates(() => {
@@ -24,7 +24,7 @@ const cogMenu = [
     type: 'separator'
   },
   {
-    label: 'Preferences...',
+    label: '程序设置',
     accelerator: 'Cmd+,',
     click() {
       app.kap.openPrefsWindow();
@@ -54,7 +54,7 @@ const applicationMenu = [
         type: 'separator'
       },
       {
-        label: 'Preferences...',
+        label: '程序设置',
         accelerator: 'Cmd+,',
         click() {
           app.kap.openPrefsWindow();
