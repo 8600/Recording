@@ -11,7 +11,6 @@
     "dist": "npm run build && build",
     "pack": "npm run build && build --dir",
     "postinstall": "install-app-deps && npm run ffmpeg",
-    "prepush": "npm run test",
     "ffmpeg": "node scripts/download-ffmpeg.js"
   },
   "devDependencies": {
