@@ -1,6 +1,6 @@
 {
-  "repository": "wulkano/kap",
-  "author": "Wulkano AS <team@wulka.no> (https://wulka.no/)",
+  "repository": "PUGE",
+  "author": "PUGE<my@owo.help>",
   "license": "MIT",
   "scripts": {
     "test": "xo",
