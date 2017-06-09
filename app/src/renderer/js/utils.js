@@ -1,4 +1,4 @@
-const {ipcRenderer} = require('electron');
+const {ipcRenderer, remote} = require('electron');
 
 function isVisible(el) {
   const classList = el.classList;
@@ -6,6 +6,7 @@ function isVisible(el) {
   return !(classList.contains('invisible') || classList.contains('hidden'));
 }
 
+// TODO: Get rid of all usage of this so we can use `$` for jQuery
 function $(selector) {
   return document.querySelector(selector);
 }
@@ -16,6 +17,11 @@ function handleTrafficLightsClicks({wrapper = $('.title-bar__controls'), hide = 
 
   hideWindowBtn.addEventListener('click', () => {
     if (isVisible(wrapper)) {
+      if (remote.getCurrentWindow() === remote.app.kap.editorWindow) {
+        ipcRenderer.send('close-editor-window');
+        return;
+      }
+
       ipcRenderer.send(hide ? 'hide-window' : 'close-window');
     }
   });
@@ -72,6 +78,8 @@ function handleActiveButtonGroup({buttonGroup}) {
 
   const activeButton = buttons.find(el => el.classList.contains('active'));
   moveShimToButton({shim, button: activeButton});
+  // At this point we don't need this class anymore
+  activeButton.classList.remove('active');
   setShimBorderRadius({
     shim,
     buttonGroupArray: buttons,
@@ -81,8 +89,7 @@ function handleActiveButtonGroup({buttonGroup}) {
   buttons.map(button => {
     button.addEventListener('click', () => {
       moveShimToButton({shim, button});
-      // At this point we don't need this class anymore
-      activeButton.classList.remove('active');
+
       setShimBorderRadius({
         shim,
         buttonGroupArray: buttons,

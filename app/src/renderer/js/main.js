@@ -6,19 +6,18 @@ import aspectRatio from 'aspectratio';
 import fileSize from 'file-size';
 import moment from 'moment';
 
-import {convertToGif, convertToWebm} from '../../scripts/convert';
 import {init as initErrorReporter, report as reportError} from '../../common/reporter';
 import {log} from '../../common/logger';
 
-// note: `./` == `/app/dist/renderer/views`, not `js`
+// Note: `./` == `/app/dist/renderer/views`, not `js`
 import {handleKeyDown, validateNumericInput} from '../js/input-utils';
-import {handleTrafficLightsClicks, isVisible, disposeObservers, handleActiveButtonGroup} from '../js/utils';
+import {handleTrafficLightsClicks, isVisible, disposeObservers} from '../js/utils';
 
 const aperture = require('aperture')();
 
 const {app} = remote;
 
-// observers that should be disposed when the window unloads
+// Observers that should be disposed when the window unloads
 const observersToDispose = [];
 
 function setMainWindowSize() {
@@ -38,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const aspectRatioSelector = document.querySelector('.aspect-ratio-selector');
   const controlsSection = document.querySelector('section.controls');
   const controlsTitleWrapper = document.querySelector('.controls-toggle');
-  const exportAs = document.querySelectorAll('#export-as button');
   const header = document.querySelector('.kap-header');
   const inputWidth = document.querySelector('#aspect-ratio-width');
   const inputHeight = document.querySelector('#aspect-ratio-height');
@@ -70,10 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastValidInputHeight = 512;
   let aspectRatioBaseValues = [lastValidInputWidth, lastValidInputHeight];
   let hasUpdateNotification = false;
-  let exportType = app.kap.settings.get('exportAs');
   let initializedActiveShim = false;
 
-  // init dynamic elements
+  // Init dynamic elements
   if (app.kap.settings.get('showCursor')) {
     toggleShowCursorBtn.parentNode.classList.add('is-active');
   }
@@ -82,13 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     micOnIcon.classList.remove('hidden');
     micOffIcon.classList.add('hidden');
   }
-  let activeExportAsButton = Array.from(exportAs)
-    .find(el => el.dataset.exportType === exportType);
-  if (!activeExportAsButton) {
-    // For some unknown reason, sometimes `exportType` will be fasly
-    activeExportAsButton = Array.from(exportAs)[0];
-  }
-  activeExportAsButton.classList.add('active');
 
   handleTrafficLightsClicks({hide: true});
 
@@ -125,7 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
     inputHeight.disabled = true;
     linkBtn.classList.add('disabled');
     swapBtn.classList.add('disabled');
-    exportAs.disabled = true;
     toggleAudioRecordBtn.classList.add('hidden');
     toggleShowCursorBtn.classList.add('hidden');
     time.classList.remove('hidden');
@@ -138,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
     inputHeight.disabled = false;
     linkBtn.classList.remove('disabled');
     swapBtn.classList.remove('disabled');
-    exportAs.disabled = false;
     toggleAudioRecordBtn.classList.remove('hidden');
     toggleShowCursorBtn.classList.remove('hidden');
     time.classList.add('hidden');
@@ -155,14 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const display = remote.screen.getDisplayMatching(cropperBounds);
 
     if (display.id === remote.screen.getPrimaryDisplay().id) {
-      // convert the coordinates to cartesian coordinates, which are used by CoreMedia
+      // Convert the coordinates to cartesian coordinates, which are used by CoreMedia
       cropperBounds.y = screen.height - (cropperBounds.y + cropperBounds.height);
     } else {
-      // if the cropper window is placed in a display that it's not the main one,
+      // If the cropper window is placed in a display that it's not the main one,
       // we need to do tome _special_ math to calculate its position
       const displayBounds = display.bounds;
 
-      // when there are more than one display, the bounds that macOS returns for a display
+      // When there are more than one display, the bounds that macOS returns for a display
       // that is not the main one are relative to the main display. consequently, the
       // bounds of windows in that display are relative to the main display.
       // we need to make those bounds relative to the display in which the cropper window
@@ -170,17 +158,17 @@ document.addEventListener('DOMContentLoaded', () => {
       cropperBounds.x = Math.abs(displayBounds.x - cropperBounds.x);
       cropperBounds.y = Math.abs(displayBounds.y - cropperBounds.y);
 
-      // convert the coordinates to cartesian coordinates, which are used by CoreMedia
+      // Convert the coordinates to cartesian coordinates, which are used by CoreMedia
       cropperBounds.y = displayBounds.height - (cropperBounds.y + cropperBounds.height);
     }
 
-    // the dashed border is 1px wide
+    // The dashed border is 1px wide
     cropperBounds.x += 1;
     cropperBounds.y += 1;
     cropperBounds.width -= 2;
     cropperBounds.height -= 2;
 
-    // we need the most recent settings
+    // We need the most recent settings
     const {
       fps,
       showCursor,
@@ -204,8 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
     aperture.startRecording(apertureOpts)
       .then(filePath => {
         recordBtn.attributes['data-state'].value = 'ready-to-stop';
-        recordBtn.children[0].classList.add('hidden'); // crop btn
-        recordBtn.children[1].classList.remove('hidden'); // stop btn
+        recordBtn.children[0].classList.add('hidden'); // Crop btn
+        recordBtn.children[1].classList.remove('hidden'); // Stop btn
         startMonitoringElapsedTimeAndSize(filePath);
         setMainWindowTitle('Recording');
         ipcRenderer.send('started-recording');
@@ -213,24 +201,15 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .catch(err => {
         ipcRenderer.send('will-stop-recording');
-        log(err);
         reportError(err);
         remote.dialog.showErrorBox('Recording error', err.message);
       });
   }
 
-  function askUserToSaveFile(opts) {
-    if (!opts.filePath || !opts.fileName) {
-      throw new Error('askUserToSaveFile must be called with {filePath, fileName}');
-    }
-
-    ipcRenderer.send('ask-user-to-save-file', opts);
-  }
-
   function restoreInputs() {
     recordBtn.attributes['data-state'].value = 'initial';
-    recordBtn.children[0].classList.remove('hidden'); // crop btn
-    recordBtn.children[1].classList.add('hidden'); // stop btn
+    recordBtn.children[0].classList.remove('hidden'); // Crop btn
+    recordBtn.children[1].classList.add('hidden'); // Stop btn
     enableInputs();
   }
 
@@ -243,26 +222,8 @@ document.addEventListener('DOMContentLoaded', () => {
         windowTitle.innerText = 'Kap';
         time.innerText = '00:00';
         size.innerText = '0 kB';
-
         restoreInputs();
-
-        switch (exportType) {
-          case 'mp4': {
-            const now = moment();
-            const fileName = `Kapture ${now.format('YYYY-MM-DD')} at ${now.format('H.mm.ss')}.mp4`;
-            askUserToSaveFile({fileName, filePath, type: 'mp4'});
-            break;
-          }
-          case 'webm': {
-            exportToType('webm', {filePath});
-            break;
-          }
-          case 'gif': {
-            ipcRenderer.send('open-editor-window', {filePath});
-            break;
-          }
-          // no default
-        }
+        ipcRenderer.send('open-editor-window', {filePath});
       });
   }
 
@@ -296,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   recordBtn.onclick = function () {
     if (app.kap.editorWindow) {
-      // we need to keep the window visible to show the shake animation
+      // We need to keep the window visible to show the shake animation
       // (it'll be auto hidden by `menubar` when the editor window gain focus)
       ipcRenderer.send('set-main-window-visibility', {
         alwaysOnTop: true,
@@ -328,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (!initializedActiveShim && !controls.classList.contains('hidden')) {
-      handleActiveButtonGroup({buttonGroup: exportAs[0].parentNode});
       initializedActiveShim = true;
       setMainWindowSize();
     }
@@ -371,14 +331,14 @@ document.addEventListener('DOMContentLoaded', () => {
   inputWidth.onkeydown = handleKeyDown;
 
   inputWidth.onblur = function () {
-    this.value = this.value || (shake(this) && 512); // prevent the input from staying empty
+    this.value = this.value || (shake(this) && 512); // Prevent the input from staying empty
   };
 
   inputHeight.oninput = function () {
     this.value = validateNumericInput(this, {
       lastValidValue: lastValidInputHeight,
       empty: true,
-      max: screen.height - screen.availTop, // currently we can't draw over the menubar,
+      max: screen.height - screen.availTop, // Currently we can't draw over the menubar
       min: 1,
       onInvalid: shake
     });
@@ -398,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
   inputHeight.onkeydown = handleKeyDown;
 
   inputHeight.onblur = function () {
-    this.value = this.value || (shake(this) && 512); // prevent the input from staying empty
+    this.value = this.value || (shake(this) && 512); // Prevent the input from staying empty
   };
 
   swapBtn.onclick = () => {
@@ -469,7 +429,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setTrayTriangleVisible(visible = true) {
     const color = hasUpdateNotification ? '#28CA42' : 'white';
-    trayTriangle.style.borderBottom = `1rem solid ${visible ? color : 'transparent'}`;
+    trayTriangle.style.borderBottomWidth = visible ? '1rem' : '0';
+    trayTriangle.style.borderBottomColor = visible ? color : 'white';
+
+    const bodyClasses = document.body.classList;
+    if (visible) {
+      bodyClasses.remove('is-tray-arrow-hidden');
+    } else {
+      bodyClasses.add('is-tray-arrow-hidden');
+    }
   }
 
   ipcRenderer.on('unstick-from-menubar', () => {
@@ -492,9 +460,9 @@ document.addEventListener('DOMContentLoaded', () => {
     titleBar.classList.add('has-update-notification');
     updateNotification.classList.remove('hidden');
 
-    // if the traffic lights are invisible, the triangle should be visible
+    // If the traffic lights are invisible, the triangle should be visible
     // if they are visible, the tray triangle should be invisible
-    setTrayTriangleVisible(isVisible(trafficLightsWrapper)); // to update the color
+    setTrayTriangleVisible(isVisible(trafficLightsWrapper)); // To update the color
 
     setMainWindowSize();
 
@@ -505,55 +473,49 @@ document.addEventListener('DOMContentLoaded', () => {
     notification.onclick = () => ipcRenderer.send('install-update');
   });
 
-  ipcRenderer.on('save-dialog-closed', () => {
+  ipcRenderer.on('log', (event, msgs) => console.log(...msgs));
+
+  function showExportWindow() {
+    header.classList.add('hidden');
+    controlsSection.classList.add('hidden');
+    progressBarSection.classList.remove('hidden');
+    setMainWindowSize();
+    app.kap.mainWindow.show();
+  }
+
+  function hideExportWindow() {
+    app.kap.mainWindow.hide();
+    setMainWindowSize();
     progressBarSection.classList.add('hidden');
     header.classList.remove('hidden');
     controlsSection.classList.remove('hidden');
     delete progressBar.value;
     progressBarLabel.innerText = 'Analyzing...';
-    setMainWindowSize();
-  });
-
-  ipcRenderer.on('log', (event, msgs) => console.log(...msgs));
-
-  const exportButtons = [];
-  exportAs.forEach((exportButton, key) => {
-    exportButtons.push(key);
-    exportButton.onclick = function () {
-      exportType = this.dataset.exportType;
-      app.kap.settings.set('exportAs', exportType);
-    };
-  });
-
-  function exportToType(type, data) {
-    header.classList.add('hidden');
-    controlsSection.classList.add('hidden');
-    progressBarSection.classList.remove('hidden');
-    setMainWindowSize();
-
-    function progressCallback(percentage) {
-      // eslint-disable-line no-inner-declarations
-      progressBarLabel.innerText = 'Processing...';
-      progressBar.value = percentage;
-    }
-
-    data.progressCallback = progressCallback;
-
-    const convert = type === 'gif' ? convertToGif : convertToWebm;
-
-    convert(data).then(filePath => {
-      const now = moment();
-      const fileName = `Kapture ${now.format('YYYY-MM-DD')} at ${now.format('H.mm.ss')}.${type}`;
-
-      progressBar.value = 100;
-
-      askUserToSaveFile({fileName, filePath, type});
-    });
-    // TODO catch
   }
 
-  ipcRenderer.on('export-to-gif', (event, data) => {
-    exportToType('gif', data);
+  ipcRenderer.on('start-export', () => {
+    showExportWindow();
+  });
+
+  ipcRenderer.on('export-progress', (event, data) => {
+    progressBarLabel.innerText = data.text;
+
+    if (data.percentage) {
+      progressBar.value = data.percentage * 100;
+    } else {
+      // TODO: How do I get the indeterminate progress bar?
+      progressBar.value = 0;
+    }
+  });
+
+  ipcRenderer.on('hide-export-window', () => {
+    hideExportWindow();
+  });
+
+  ipcRenderer.on('end-export', () => {
+    progressBarLabel.innerText = 'Success 🎉'; // TODO: What should it say here?
+    progressBar.value = 100;
+    setTimeout(hideExportWindow, 1000);
   });
 
   ipcRenderer.on('show-notification', (event, {title, body}) => new Notification(title, {body}));

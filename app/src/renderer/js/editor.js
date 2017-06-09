@@ -2,11 +2,15 @@ import {remote, ipcRenderer} from 'electron';
 import aspectRatio from 'aspectratio';
 import moment from 'moment';
 
-// note: `./` == `/app/dist/renderer/views`, not `js`
+// Note: `./` == `/app/dist/renderer/views`, not `js`
 import {handleKeyDown, validateNumericInput} from '../js/input-utils';
 import {handleTrafficLightsClicks, $, handleActiveButtonGroup} from '../js/utils';
+import {init as initErrorReporter} from '../../common/reporter';
 
 const {app} = remote;
+const {getShareServices} = remote.require('./plugins').default;
+
+initErrorReporter();
 
 document.addEventListener('DOMContentLoaded', () => {
   const playBtn = $('.js-play-video');
@@ -14,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const maximizeBtn = $('.js-maximize-video');
   const unmaximizeBtn = $('.js-unmaximize-video');
   const previewTime = $('.js-video-time');
-  const discardBtn = $('.discard');
   const inputHeight = $('.input-height');
   const inputWidth = $('.input-width');
   const fps15Btn = $('#fps-15');
@@ -24,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const preview = $('#preview');
   const previewContainer = $('.video-preview');
   const progressBar = $('progress');
-  const saveBtn = $('.save');
   const windowHeader = $('.window-header');
 
   let maxFps = app.kap.settings.get('fps');
@@ -53,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       previewTime.innerText = `${moment().startOf('day').seconds(preview.currentTime).format('m:ss')}`;
     }, 1);
 
-    // remove the listener since it's called
+    // Remove the listener since it's called
     // every time the video loops
     preview.oncanplay = undefined;
   };
@@ -115,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
   inputWidth.onkeydown = handleKeyDown;
 
   inputWidth.onblur = function () {
-    this.value = this.value || (shake(this) && lastValidInputWidth); // prevent the input from staying empty
+    this.value = this.value || (shake(this) && lastValidInputWidth); // Prevent the input from staying empty
   };
 
   inputHeight.oninput = function () {
@@ -139,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
   inputHeight.onkeydown = handleKeyDown;
 
   inputHeight.onblur = function () {
-    this.value = this.value || (shake(this) && lastValidInputHeight); // prevent the input from staying empty
+    this.value = this.value || (shake(this) && lastValidInputHeight); // Prevent the input from staying empty
   };
 
   fps15Btn.onclick = function () {
@@ -166,41 +168,66 @@ document.addEventListener('DOMContentLoaded', () => {
     loop = true;
   };
 
-  function confirmDiscard() {
-    remote.dialog.showMessageBox(remote.app.kap.editorWindow, {
-      type: 'question',
-      buttons: ['No', 'Yes'],
-      message: 'Are you sure that you want to discard this recording?',
-      detail: 'It will not be saved'
-    }, response => {
-      if (response === 1) { // `Yes`
-        ipcRenderer.send('close-editor-window');
-      }
-    });
-  }
-
-  discardBtn.onclick = confirmDiscard;
   window.onkeyup = event => {
-    if (event.keyCode === 27) { // esc
+    if (event.keyCode === 27) { // Esc
       if (maximizeBtn.classList.contains('hidden')) {
-        // exit fullscreen
+        // Exit fullscreen
         unmaximizeBtn.onclick();
       } else {
-        confirmDiscard();
+        ipcRenderer.send('close-editor-window');
       }
     }
   };
 
-  saveBtn.onclick = () => {
-    ipcRenderer.send('export-to-gif', {
-      filePath: preview.src,
-      width: inputWidth.value,
-      height: inputHeight.value,
-      fps,
-      loop
+  function registerExportButtons() {
+    const exportButtons = document.querySelectorAll('.output-format button');
+    const shareServices = getShareServices();
+    console.log('Share services', shareServices);
+
+    ipcRenderer.on('toggle-format-buttons', (event, data) => {
+      for (const btn of exportButtons) {
+        btn.disabled = !data.enabled;
+      }
     });
-    ipcRenderer.send('close-editor-window');
-  };
+
+    for (const btn of exportButtons) {
+      const format = btn.dataset.exportType;
+      const dropdown = document.createElement('select');
+
+      let i = 0;
+      for (const service of shareServices) {
+        if (service.formats.includes(format)) {
+          const option = document.createElement('option');
+          option.text = service.title;
+          option.value = i;
+          dropdown.appendChild(option);
+        }
+
+        i++;
+      }
+
+      btn.appendChild(dropdown);
+
+      // Prevent the dropdown from triggering the button
+      dropdown.onclick = event => {
+        event.stopPropagation();
+      };
+
+      btn.onclick = () => { // eslint-disable-line no-loop-func
+        const service = shareServices[dropdown.value];
+        service.run({
+          format,
+          filePath: preview.src,
+          width: inputWidth.value,
+          height: inputHeight.value,
+          fps,
+          loop
+        });
+      };
+    }
+  }
+
+  registerExportButtons();
 
   ipcRenderer.on('video-src', (event, src) => {
     preview.src = src;

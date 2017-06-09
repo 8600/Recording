@@ -1,13 +1,13 @@
-import {app, Menu, shell} from 'electron';
+import {app, Menu, shell, ipcMain} from 'electron';
 
 import {checkForUpdates} from './auto-updater';
 
 const checkForUpdatesItem = {
-  label: '检测更新',
+  label: 'Check for updates',
   click(item) {
     item.enabled = false;
     checkForUpdates(() => {
-      // this will be called if no update is available
+      // This will be called if no update is available
       app.kap.mainWindow.webContents.send('show-notification', {
         title: 'No updates available!',
         body: 'You will automatically receive updates as soon as they are available 🤗'
@@ -24,7 +24,7 @@ const cogMenu = [
     type: 'separator'
   },
   {
-    label: '程序设置',
+    label: 'Preferences...',
     accelerator: 'Cmd+,',
     click() {
       app.kap.openPrefsWindow();
@@ -54,7 +54,7 @@ const applicationMenu = [
         type: 'separator'
       },
       {
-        label: '程序设置',
+        label: 'Preferences...',
         accelerator: 'Cmd+,',
         click() {
           app.kap.openPrefsWindow();
@@ -116,6 +116,11 @@ const applicationMenu = [
         accelerator: 'CmdOrCtrl+W',
         click(item, focusedWindow) {
           if (focusedWindow) {
+            if (focusedWindow === app.kap.editorWindow) {
+              ipcMain.emit('close-editor-window');
+              return;
+            }
+
             focusedWindow.hide();
           }
         }

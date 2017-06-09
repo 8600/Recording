@@ -1,9 +1,8 @@
 import path from 'path';
-import {rename as fsRename} from 'fs';
+import fs from 'fs';
 
-import {app, dialog, BrowserWindow, ipcMain, Menu, screen, globalShortcut} from 'electron';
+import {app, BrowserWindow, ipcMain, Menu, screen, globalShortcut, dialog} from 'electron';
 import isDev from 'electron-is-dev';
-import mkdirp from 'mkdirp';
 
 import {init as initErrorReporter} from '../common/reporter';
 import logger from '../common/logger';
@@ -11,6 +10,7 @@ import * as settings from '../common/settings-manager';
 
 import autoUpdater from './auto-updater';
 import {applicationMenu, cogMenu} from './menus';
+import plugins from './plugins';
 
 const menubar = require('menubar')({
   index: `file://${__dirname}/../renderer/views/main.html`,
@@ -41,7 +41,7 @@ settings.init();
 ipcMain.on('set-main-window-size', (event, args) => {
   if (args.width && args.height && mainWindow) {
     [args.width, args.height] = [parseInt(args.width, 10), parseInt(args.height, 10)];
-    mainWindow.setSize(args.width, args.height, true); // true == animate
+    mainWindow.setSize(args.width, args.height, true); // True == animate
     event.returnValue = true; // Give true to sendSync caller
   }
 });
@@ -49,7 +49,7 @@ ipcMain.on('set-main-window-size', (event, args) => {
 ipcMain.on('set-cropper-window-size', (event, args) => {
   if (args.width && args.height && cropperWindow) {
     [args.width, args.height] = [parseInt(args.width, 10), parseInt(args.height, 10)];
-    cropperWindow.setSize(args.width + cropperWindowBuffer, args.height + cropperWindowBuffer, true); // true == animate
+    cropperWindow.setSize(args.width + cropperWindowBuffer, args.height + cropperWindowBuffer, true); // True == animate
   }
 });
 
@@ -95,7 +95,7 @@ ipcMain.on('open-cropper-window', (event, size) => {
       frame: false,
       transparent: true,
       resizable: true,
-      shadow: false,
+      hasShadow: false,
       enableLargerThanScreen: true,
       x,
       y
@@ -171,7 +171,7 @@ function resetMainWindowShadow() {
 }
 
 function resetTrayIcon() {
-  appState = 'initial'; // if the icon is being reseted, we are not recording anymore
+  appState = 'initial'; // If the icon is being reseted, we are not recording anymore
   shouldStopWhenTrayIsClicked = false;
   tray.setImage(path.join(__dirname, '..', '..', 'static', 'menubarDefaultTemplate.png'));
   menubar.setOption('alwaysOnTop', false);
@@ -192,8 +192,10 @@ function openPrefsWindow() {
   prefsWindow = new BrowserWindow({
     width: 480,
     height: 480,
-    frame: false,
     resizable: false,
+    minimizable: false,
+    maximizable: false,
+    titleBarStyle: 'hidden',
     show: false
   });
 
@@ -205,7 +207,7 @@ function openPrefsWindow() {
   prefsWindow.on('ready-to-show', prefsWindow.show);
 
   prefsWindow.on('blur', () => {
-    // because of issues on our codebase and on the `menubar` module,
+    // Because of issues on our codebase and on the `menubar` module,
     // for now we'll have this ugly workaround: if the main window is attached
     // to the menubar, we'll just close the prefs window when it loses focus
     if (!mainWindowIsDetached && !prefsWindow.webContents.isDevToolsFocused()) {
@@ -219,6 +221,9 @@ function getCropperWindow() {
 }
 
 app.on('ready', () => {
+  // Ensure all plugins are up to date
+  plugins.upgrade().catch(() => {});
+
   globalShortcut.register('Cmd+Shift+5', () => {
     const recording = (appState === 'recording');
     mainWindow.webContents.send((recording) ? 'stop-recording' : 'prepare-recording');
@@ -252,24 +257,24 @@ menubar.on('after-create-window', () => {
 
   mainWindow.on('blur', () => {
     if (cropperWindow && !cropperWindow.isFocused() && !recording) {
-      // close the cropper window if the main window loses focus and the cropper window
+      // Close the cropper window if the main window loses focus and the cropper window
       // is not focused
       closeCropperWindow();
     }
 
     recomputeExpectedWindowPosition();
     recomputeCurrentWindowPosition();
-    if (expectedWindowPosition.x !== currentWindowPosition.x || expectedWindowPosition.y !== currentWindowPosition.y) { // this line is too long
+    if (expectedWindowPosition.x !== currentWindowPosition.x || expectedWindowPosition.y !== currentWindowPosition.y) { // This line is too long
       menubar.setOption('x', currentWindowPosition.x);
       menubar.setOption('y', currentWindowPosition.y);
-    } else { // reset the position if the window is back at it's original position
+    } else { // Reset the position if the window is back at it's original position
       menubar.setOption('x', undefined);
       menubar.setOption('y', undefined);
     }
   });
 
   let wasStuck = true;
-  mainWindow.on('move', () => { // unfortunately this is just an alias for 'moved'
+  mainWindow.on('move', () => { // Unfortunately this is just an alias for 'moved'
     recomputeExpectedWindowPosition();
     recomputeCurrentWindowPosition();
     const diff = {
@@ -285,7 +290,7 @@ menubar.on('after-create-window', () => {
         wasStuck = true;
         mainWindowIsDetached = false;
       }
-      // the `move` event is called when the user reselases the mouse button
+      // The `move` event is called when the user reselases the mouse button
       // because of that, we need to move the window to it's expected position, since the
       // user will never release the mouse in the *right* position (diff.[x, y] === 0)
       tray.setHighlightMode('always');
@@ -310,7 +315,7 @@ menubar.on('after-create-window', () => {
     }
     if (mainWindowIsNew) {
       mainWindowIsNew = false;
-      positioner.move('trayCenter', tray.getBounds()); // not sure why the fuck this is needed (ﾉಠдಠ)ﾉ︵┻━┻
+      positioner.move('trayCenter', tray.getBounds()); // Not sure why the fuck this is needed (ﾉಠдಠ)ﾉ︵┻━┻
     }
     if (appState === 'recording' && shouldStopWhenTrayIsClicked) {
       mainWindow.webContents.send('stop-recording');
@@ -338,7 +343,7 @@ menubar.on('after-create-window', () => {
   });
 
   mainWindow.once('ready-to-show', () => {
-    positioner.move('trayCenter', tray.getBounds()); // not sure why the fuck this is needed (ﾉಠдಠ)ﾉ︵┻━┻
+    positioner.move('trayCenter', tray.getBounds()); // Not sure why the fuck this is needed (ﾉಠдಠ)ﾉ︵┻━┻
     mainWindow.show();
   });
 
@@ -428,52 +433,28 @@ ipcMain.on('move-cropper-window', (event, data) => {
   cropperWindow.setPosition(...position);
 });
 
-ipcMain.on('ask-user-to-save-file', (event, data) => {
-  const kapturesDir = settings.get('kapturesDir');
-  const type = data.type;
-
-  let filters;
-  if (type === 'mp4') {
-    filters = [{name: 'Movies', extensions: ['mp4']}];
-  } else if (type === 'webm') {
-    filters = [{name: 'Movies', extensions: ['webm']}];
-  } else {
-    filters = [{name: 'Images', extensions: ['gif']}];
-  }
-
-  mkdirp(kapturesDir, err => {
-    if (err) {
-      // can be ignored
-    }
-    dialog.showSaveDialog({
-      title: data.fileName,
-      defaultPath: `${kapturesDir}/${data.fileName}`,
-      filters
-    }, fileName => {
-      if (fileName) {
-        fsRename(data.filePath, fileName);
-      }
-      mainWindow.webContents.send('save-dialog-closed');
-    });
-  });
-});
-
 ipcMain.on('open-editor-window', (event, opts) => {
   if (editorWindow) {
     return editorWindow.show();
   }
 
   editorWindow = new BrowserWindow({
-    width: 768,
-    minWidth: 768,
-    height: 428,
-    minHeight: 428,
+    width: 800,
+    minWidth: 800,
+    height: 430,
+    minHeight: 430,
     frame: false
   });
+
+  app.kap.editorWindow = editorWindow;
 
   editorWindow.loadURL(`file://${__dirname}/../renderer/views/editor.html`);
 
   editorWindow.webContents.on('did-finish-load', () => editorWindow.webContents.send('video-src', opts.filePath));
+
+  editorWindow.kap = {
+    videoFilePath: opts.filePath
+  };
 
   editorWindow.on('closed', () => {
     editorWindow = undefined;
@@ -491,7 +472,6 @@ ipcMain.on('open-editor-window', (event, opts) => {
     }
   });
 
-  app.kap.editorWindow = editorWindow;
   menubar.setOption('hidden', true);
   mainWindow.hide();
   tray.setHighlightMode('never');
@@ -499,20 +479,38 @@ ipcMain.on('open-editor-window', (event, opts) => {
 });
 
 ipcMain.on('close-editor-window', () => {
-  if (editorWindow) {
-    editorWindow.close();
-    menubar.setOption('hidden', false);
-    if (mainWindowIsDetached === true) {
-      mainWindow.show();
-    } else {
-      app.dock.hide();
-    }
+  if (!editorWindow) {
+    return;
   }
+
+  dialog.showMessageBox(editorWindow, {
+    type: 'question',
+    buttons: ['Discard', 'Cancel'],
+    defaultId: 1,
+    message: 'Are you sure that you want to discard this recording?',
+    detail: 'It will not be saved'
+  }, buttonIndex => {
+    if (buttonIndex === 0) {
+      // Discard the source video
+      fs.unlink(editorWindow.kap.videoFilePath, () => {});
+
+      // For some reason it doesn't close when called in the same tick
+      setImmediate(() => {
+        editorWindow.close();
+      });
+
+      menubar.setOption('hidden', false);
+      if (mainWindowIsDetached === true) {
+        mainWindow.show();
+      } else {
+        app.dock.hide();
+      }
+    }
+  });
 });
 
-ipcMain.on('export-to-gif', (event, data) => {
-  mainWindow.webContents.send('export-to-gif', data);
-  mainWindow.show();
+ipcMain.on('export', (event, data) => {
+  mainWindow.webContents.send('export', data);
 });
 
 ipcMain.on('set-main-window-visibility', (event, opts) => {
