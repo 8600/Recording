@@ -7,10 +7,10 @@ const execa = require('execa');
 const got = require('got');
 const ora = require('ora');
 
-let spinner = ora({text: 'Installing 7zip', stream: process.stdout}).start();
+let spinner = ora({text: '正在下载ffmpeg.7zip', stream: process.stdout}).start();
 
-const FFMPEG_URL = 'https://evermeet.cx/ffmpeg/ffmpeg-85704-gcbfd44a.7z';
-
+// const FFMPEG_URL = 'https://evermeet.cx/pub/ffmpeg/ffmpeg-3.2.2.7z';
+const FFMPEG_URL = 'http://myweb-10017157.cossh.myqcloud.com/2017/0813/ffmpeg-3.2.2.7z';
 const VENDOR_PATH = ['..', 'app', 'vendor'];
 
 const joinPath = (...str) => path.join(__dirname, ...str);
