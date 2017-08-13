@@ -33,7 +33,7 @@ if (process.platform === 'darwin') {
   execa(joinPath('brew-install-7zip.sh'))
     .then(() => {
       spinner.succeed();
-      spinner = ora({text: 'Downloading ffmpeg (0%)', stream: process.stdout}).start();
+      spinner = ora({text: '正在下载ffmpeg.7zip (0%)', stream: process.stdout}).start();
       fs.mkdir(joinPath(...VENDOR_PATH), err => {
         if (err && err.code !== 'EEXIST') {
           logErrorAndExit(err);
@@ -58,7 +58,7 @@ if (process.platform === 'darwin') {
 
         ffmpegDownloader.on('data', chunk => {
           downloadedSize += chunk.length;
-          spinner.text = `Downloading ffmpeg (${(100.0 * downloadedSize / totalSize).toFixed(2)}%)`;
+          spinner.text = `Bundling ffmpeg (${(100.0 * downloadedSize / totalSize).toFixed(2)}%)`;
         });
 
         ffmpegDownloader.pipe(writeStream);
