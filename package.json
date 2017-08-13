@@ -19,12 +19,12 @@
     "chalk": "^2.1.0",
     "cssnano": "3.10.0",
     "del": "^3.0.0",
-    "electron": "1.7.2",
-    "electron-builder": "17.5.0",
-    "execa": "0.6.3",
+    "electron": "^1.7.5",
+    "electron-builder": "^19.20.1",
+    "execa": "^0.8.0",
     "got": "^7.1.0",
-    "gulp": "gulpjs/gulp#4.0",
-    "gulp-babel": "^7.0.0",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-babel": "6.1.2",
     "gulp-inject-svg": "^0.1.13",
     "gulp-postcss": "7.0.0",
     "gulp-pug": "3.3.0",
@@ -66,5 +66,8 @@
     "plugins": [
       "transform-es2015-modules-commonjs"
     ]
+  },
+  "dependencies": {
+    "gulp": "github:gulpjs/gulp#4.0"
   }
 }

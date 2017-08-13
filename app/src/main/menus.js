@@ -3,13 +3,13 @@ import {app, Menu, shell, ipcMain, Notification} from 'electron';
 import {checkForUpdates} from './auto-updater';
 
 const checkForUpdatesItem = {
-  label: 'Check for updates',
+  label: '检查更新',
   click(item) {
     item.enabled = false;
     checkForUpdates(() => {
       // This will be called if no update is available
       (new Notification({
-        title: 'No updates available!',
+        title: '已经是最新版本!',
         body: 'You will automatically receive updates as soon as they are available 🤗'
       })).show();
     });
@@ -24,7 +24,7 @@ const cogMenu = [
     type: 'separator'
   },
   {
-    label: 'Preferences...',
+    label: '偏好设置',
     accelerator: 'Cmd+,',
     click() {
       app.kap.openPrefsWindow();
@@ -54,7 +54,7 @@ const applicationMenu = [
         type: 'separator'
       },
       {
-        label: 'Preferences...',
+        label: '偏好设置',
         accelerator: 'Cmd+,',
         click() {
           app.kap.openPrefsWindow();
@@ -65,7 +65,7 @@ const applicationMenu = [
         type: 'separator'
       },
       {
-        label: 'Contribute',
+        label: '贡献人员',
         click: () => shell.openExternal('https://github.com/wulkano/kap')
       },
       {
@@ -96,10 +96,10 @@ const applicationMenu = [
     ]
   },
   {
-    label: 'File',
+    label: '文件',
     submenu: [
       {
-        label: 'New Recording',
+        label: '新建录制',
         accelerator: 'CmdOrCtrl+N',
         click(item, focusedWindow) {
           focusedWindow.webContents.send('prepare-recording');
@@ -112,7 +112,7 @@ const applicationMenu = [
         type: 'separator'
       },
       {
-        label: 'Close',
+        label: '关闭',
         accelerator: 'CmdOrCtrl+W',
         click(item, focusedWindow) {
           if (focusedWindow) {
@@ -128,7 +128,7 @@ const applicationMenu = [
     ]
   },
   {
-    label: 'Edit',
+    label: '编辑',
     submenu: [
       {
         role: 'undo'
@@ -157,10 +157,10 @@ const applicationMenu = [
     ]
   },
   {
-    label: 'View',
+    label: '视图',
     submenu: [
       {
-        label: 'Reload',
+        label: '重新录制',
         accelerator: 'CmdOrCtrl+R',
         click(item, focusedWindow) {
           if (focusedWindow) {
@@ -169,7 +169,7 @@ const applicationMenu = [
         }
       },
       {
-        label: 'Toggle Developer Tools',
+        label: '开始调试',
         accelerator: process.platform === 'darwin' ? 'Alt+Command+I' : 'Ctrl+Shift+I',
         click(item, focusedWindow) {
           if (focusedWindow) {
