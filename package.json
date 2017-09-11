@@ -11,7 +11,7 @@
     "start": "npm run app",
     "dist": "npm run build && build",
     "pack": "npm run build && build --dir",
-    "postinstall": "install-app-deps && npm run ffmpeg",
+    "postinstall": "lsnpm run ffmpeg",
     "ffmpeg": "node scripts/download-ffmpeg.js"
   },
   "devDependencies": {
@@ -19,8 +19,6 @@
     "chalk": "^2.1.0",
     "cssnano": "3.10.0",
     "del": "^3.0.0",
-    "electron": "^1.7.6",
-    "electron-builder": "^19.27.7",
     "execa": "^0.8.0",
     "got": "^7.1.0",
     "gulp": "github:gulpjs/gulp#4.0",
