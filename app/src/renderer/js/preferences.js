@@ -1,4 +1,4 @@
-import {remote} from 'electron';
+import {remote, shell} from 'electron';
 import _ from 'lodash';
 import $j from 'jquery/dist/jquery.slim';
 
@@ -18,6 +18,7 @@ const observersToDispose = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   // Element definitions
+  const allowAnalyticsCheckbox = $('#allow-analytics');
   const audioInputDeviceSelector = $('.js-audio-input-device-selector');
   const chooseSaveDirectoryBtn = $('.js-choose-save');
   const fpsLabel = $('.fps-slider .js-middle-label');
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const openOnStartupCheckbox = $('#open-on-startup');
   const saveToDescription = $('.js-save-to-description');
   const showCursorCheckbox = $('#show-cursor');
+  const openPluginsFolder = $('.js-open-plugins');
 
   const electronWindow = getCurrentWindow();
 
@@ -38,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
   saveToDescription.setAttribute('title', settingsValues.kapturesDir);
   saveToDescription.innerText = `.../${settingsValues.kapturesDir.split('/').pop()}`;
   openOnStartupCheckbox.checked = settingsValues.openOnStartup;
+  allowAnalyticsCheckbox.checked = settingsValues.allowAnalytics;
   showCursorCheckbox.checked = settingsValues.showCursor;
   if (settingsValues.showCursor === false) {
     highlightClicksCheckbox.disabled = true;
@@ -73,15 +76,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // TODO: DRY up the plugin list code when it's more mature
   function loadInstalledPlugins() {
     const template = `
-      <ul>
-        <% _.forEach(plugins, plugin => { %>
-          <li>
-            <h4><%- plugin.prettyName %> <span><i><%- plugin.version %><i></span></h4>
-            <p><%- plugin.description %></p>
-            <button class="uninstall" data-name="<%- plugin.name %>">Uninstall</button>
-          </li>
-        <% }); %>
-      </ul>
+      <% _.forEach(plugins, plugin => { %>
+        <div class="preference container">
+          <div class="preference-part">
+            <div class="preference-content">
+              <div class="preference__title">
+                <a class="preference__url o-link" href data-url="<%- plugin.homepage %>"><%- plugin.prettyName %></a>
+                <span class="preference__note"><%- plugin.version %></span>
+              </div>
+              <p class="preference__description"><%- plugin.description %></p>
+            </div>
+            <div class="preference-input">
+              <button class="button button--secondary uninstall" data-name="<%- plugin.name %>">Uninstall</button>
+            </div>
+          </div>
+        </div>
+      <% }); %>
     `;
 
     const compiled = _.template(template);
@@ -94,17 +104,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadAvailablePlugins() {
     const template = `
-      <ul>
-        <% _.forEach(plugins, plugin => { %>
-          <li>
-            <h4><%- plugin.prettyName %> <span><i><%- plugin.version %><i></span></h4>
-            <p><%- plugin.description %></p>
-            <button class="install" data-name="<%- plugin.name %>">Install</button>
-          </li>
-        <% }); %>
-      </ul>
+      <% _.forEach(plugins, plugin => { %>
+        <div class="preference container">
+          <div class="preference-part">
+            <div class="preference-content">
+              <div class="preference__title">
+                <a class="preference__url o-link" href data-url="<%- plugin.links.homepage %>"><%- plugin.prettyName %></a>
+                <span class="preference__note"><%- plugin.version %></span>
+              </div>
+              <p class="preference__description"><%- plugin.description %></p>
+            </div>
+            <div class="preference-input">
+              <button class="button button--secondary install" data-name="<%- plugin.name %>">Install</button>
+            </div>
+          </div>
+        </div>
+      <% }); %>
     `;
-
     const compiled = _.template(template);
     const html = compiled({
       plugins: await plugins.getFromNpm()
@@ -136,6 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
     })().catch(console.error);
   });
 
+  // Open plugin homepage
+  $j('.plugins-prefs').on('click', '.preference__url', function (event) {
+    event.preventDefault();
+    const url = $j(this).data('url');
+    shell.openExternal(url);
+  });
+
   loadInstalledPlugins();
   loadAvailablePlugins();
 
@@ -148,9 +171,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  openPluginsFolder.onclick = function (event) {
+    event.preventDefault();
+    // The `shell.openItem(plugins.cwd);` method doesn't focus Finder
+    // See: https://github.com/electron/electron/issues/10477
+    // We work around it with:
+    shell.openExternal(encodeURI(`file://${plugins.cwd}`));
+  };
+
   openOnStartupCheckbox.onchange = function () {
     app.kap.settings.set('openOnStartup', this.checked);
     app.setLoginItemSettings({openAtLogin: this.checked});
+  };
+
+  allowAnalyticsCheckbox.onchange = function () {
+    app.kap.settings.set('allowAnalytics', this.checked);
   };
 
   showCursorCheckbox.onchange = function () {
