@@ -66,5 +66,5 @@ if (process.platform === 'darwin') {
     })
     .catch(logErrorAndExit);
 } else {
-  logErrorAndExit(`Currently, ${chalk.bold('Kap')} only runs on macOS`);
+  logErrorAndExit(`Currently, ${chalk.bold('Recording')} 仅支持macOS系统`);
 }

@@ -11,7 +11,7 @@
     "start": "npm run app",
     "dist": "npm run build && build",
     "pack": "npm run build && build --dir",
-    "postinstall": "lsnpm run ffmpeg",
+    "postinstall": "npm run ffmpeg",
     "ffmpeg": "node scripts/download-ffmpeg.js"
   },
   "devDependencies": {
