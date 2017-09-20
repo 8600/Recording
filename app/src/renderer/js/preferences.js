@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   $j('#plugins-installed').on('click', '.uninstall', function () {
-    $j(this).prop('disabled', true);
+    $j(this).prop('disabled', true).text('正在卸载...');
     const name = $j(this).data('name');
 
     (async () => {
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $j('#plugins-available').on('click', '.install', function () {
-    $j(this).prop('disabled', true);
+    $j(this).prop('disabled', true).text('正在安装...');
     const name = $j(this).data('name');
 
     (async () => {
