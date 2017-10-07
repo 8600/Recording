@@ -6,13 +6,13 @@ block head
   +script('preferences')
 
 block body
-  +window-header(title='Preferences').is-large
+  +window-header(title='偏好设置').is-large
     nav.prefs-nav
-      a.is-active(href data-pane='general' title='General')
+      a.is-active(href data-pane='general' title='普通设置')
         +icon('settings')
-      a(href data-pane='advanced' title='Advanced')
+      a(href data-pane='advanced' title='高级设置')
         +icon('tune')
-      a(href data-pane='plugins' title='Plugins')
+      a(href data-pane='plugins' title='插件选项')
         +icon('ic_add_box_24px')
   .prefs-sections
     section.js-prefs-section.settings

@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   $j('#plugins-installed').on('click', '.uninstall', function () {
-    $j(this).prop('disabled', true).text('正在卸载...');
+    $j(this).prop('disabled', true).text('Uninstalling…');
     const name = $j(this).data('name');
 
     (async () => {
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   $j('#plugins-available').on('click', '.install', function () {
-    $j(this).prop('disabled', true).text('正在安装...');
+    $j(this).prop('disabled', true).text('Installing…');
     const name = $j(this).data('name');
 
     (async () => {
@@ -163,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAvailablePlugins();
 
   chooseSaveDirectoryBtn.onclick = function () {
+    alert('sdsd')
     const directories = dialog.showOpenDialog(electronWindow, {properties: ['openDirectory', 'createDirectory']});
     if (directories) {
       app.kap.settings.set('kapturesDir', directories[0]);
