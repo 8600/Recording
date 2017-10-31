@@ -149,15 +149,15 @@ document.addEventListener('DOMContentLoaded', () => {
     } = app.kap.settings.getAll();
 
     const apertureOpts = {
-      fps,
+      fps: Number(fps),
       cropArea: cropperBounds,
       showCursor,
       highlightClicks,
-      displayId: display.id
+      displayId: String(display.id)
     };
 
     if (recordAudio === true) {
-      apertureOpts.audioSourceId = audioInputDeviceId;
+      apertureOpts.audioDeviceId = audioInputDeviceId;
     }
 
     aperture.startRecording(apertureOpts)

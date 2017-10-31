@@ -4,7 +4,7 @@ import {app} from 'electron';
 import settings from 'electron-settings';
 import objectPath from 'object-path';
 
-const aperture = require('aperture')();
+const aperture = require('aperture');
 
 const DEFAULTS = {
   kapturesDir: `${homedir()}/Movies/Kaptures`,
@@ -32,7 +32,7 @@ const volatiles = {
 // we need to sync every setting that can be modified externally
 // e.g. the `openOnStartup` setting can be modified via
 // macOS' System Preferences.app
-function sync() {
+async function init() {
   settings.setSync('openOnStartup', app.getLoginItemSettings().openAtLogin);
 }
 
@@ -45,11 +45,10 @@ function init() {
   // if we do not have a input id stored.
   // TODO: if no input device is available (could happen in an iMac, for example), we need
   // to tell the user
-  aperture.getAudioSources().then(devices => {
-    if (devices.length > 0) {
-      settings.setSync('audioInputDeviceId', devices[0].id);
-    }
-  });
+  const devices = await aperture.audioDevices();
+  if (devices.length > 0) {
+    settings.setSync('audioInputDeviceId', devices[0].id);
+  }
 }
 
 function get(key) {

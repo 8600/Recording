@@ -11,7 +11,7 @@
     "start": "npm run app",
     "dist": "npm run build && build",
     "pack": "npm run build && build --dir",
-    "postinstall": "npm run ffmpeg",
+    "postinstall": "electron-builder install-app-deps && npm run ffmpeg",
     "ffmpeg": "node scripts/download-ffmpeg.js"
   },
   "devDependencies": {
@@ -19,6 +19,8 @@
     "chalk": "^2.1.0",
     "cssnano": "3.10.0",
     "del": "^3.0.0",
+    "electron": "1.7.9",
+    "electron-builder": "19.41.0",
     "execa": "^0.8.0",
     "got": "^7.1.0",
     "gulp": "github:gulpjs/gulp#4.0",
@@ -40,6 +42,7 @@
     "appId": "com.wulkano.kap",
     "files": [
       "**/*",
+      "dist",
       "!src"
     ],
     "mac": {
